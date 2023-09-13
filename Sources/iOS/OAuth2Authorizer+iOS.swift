@@ -61,7 +61,7 @@ open class OAuth2Authorizer: OAuth2AuthorizerUI {
 	*/
 	public func openAuthorizeURLInBrowser(_ url: URL) throws {
 		
-		#if !P2_APP_EXTENSIONS
+		#if !P2_APP_EXTENSIONS && !os(visionOS)
 		if !UIApplication.shared.openURL(url) {
 			throw OAuth2Error.unableToOpenAuthorizeURL
 		}
@@ -170,6 +170,14 @@ open class OAuth2Authorizer: OAuth2AuthorizerUI {
 #if targetEnvironment(macCatalyst)
 		authenticationSession = ASWebAuthenticationSession(url: url, callbackURLScheme: redirectURL.scheme, completionHandler: completionHandler)
 		return (authenticationSession as! ASWebAuthenticationSession).start()
+#elseif os(visionOS)
+        authenticationSession = ASWebAuthenticationSession(url: url, callbackURLScheme: redirectURL.scheme, completionHandler: completionHandler)
+        webAuthenticationPresentationContextProvider = OAuth2ASWebAuthenticationPresentationContextProvider(authorizer: self)
+        if let session = authenticationSession as? ASWebAuthenticationSession {
+            session.presentationContextProvider = webAuthenticationPresentationContextProvider as! OAuth2ASWebAuthenticationPresentationContextProvider
+            session.prefersEphemeralWebBrowserSession = prefersEphemeralWebBrowserSession
+        }
+        return (authenticationSession as! ASWebAuthenticationSession).start()
 #else
 		if #available(iOS 12, *) {
 			authenticationSession = ASWebAuthenticationSession(url: url, callbackURLScheme: redirectURL.scheme, completionHandler: completionHandler)
@@ -181,7 +189,7 @@ open class OAuth2Authorizer: OAuth2AuthorizerUI {
 				}
 			}
 			return (authenticationSession as! ASWebAuthenticationSession).start()
-		} else {
+        } else {
 			authenticationSession = SFAuthenticationSession(url: url, callbackURLScheme: redirect, completionHandler: completionHandler)
 			return (authenticationSession as! SFAuthenticationSession).start()
 		}
@@ -207,6 +215,7 @@ open class OAuth2Authorizer: OAuth2AuthorizerUI {
 	*/
 	@discardableResult
 	public func authorizeSafariEmbedded(from controller: UIViewController, at url: URL) throws -> SFSafariViewController {
+        #if !os(visionOS)
 		safariViewDelegate = OAuth2SFViewControllerDelegate(authorizer: self)
 		let web = SFSafariViewController(url: url)
 		web.title = oauth2.authConfig.ui.title
@@ -223,6 +232,9 @@ open class OAuth2Authorizer: OAuth2AuthorizerUI {
 		controller.present(web, animated: true, completion: nil)
 		
 		return web
+        #else
+        throw OAuth2Error.generic("Not supported")
+        #endif
 	}
 	
 	
