@@ -18,7 +18,7 @@
 //  limitations under the License.
 //
 
-#if os(iOS)
+#if os(iOS) || os(visionOS)
 import UIKit
 #endif
 
@@ -49,7 +49,7 @@ public struct OAuth2AuthConfig {
 		/// May be passed through to [ASWebAuthenticationSession](https://developer.apple.com/documentation/authenticationservices/aswebauthenticationsession/3237231-prefersephemeralwebbrowsersessio).
 		public var prefersEphemeralWebBrowserSession = false
 		
-		#if os(iOS)
+		#if os(iOS) || os(visionOS)
 		/// By assigning your own style you can configure how the embedded authorization is presented.
 		public var modalPresentationStyle = UIModalPresentationStyle.fullScreen
 		
