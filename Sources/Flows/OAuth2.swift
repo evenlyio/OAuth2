@@ -23,9 +23,9 @@ import Foundation
  import Base
  #if os(macOS)
   import macOS
- #elseif os(iOS) || os(visionOS)
+ #elseif os(iOS)
   import iOS
- #elseif os(tvOS)
+ #elseif os(tvOS) || os(visionOS)
   import tvOS
  #endif
 #endif
